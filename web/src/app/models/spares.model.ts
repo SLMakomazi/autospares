@@ -29,6 +29,15 @@ export interface Brand {
   logo?: string;
 }
 
+export interface CarModel {
+  _id: string;
+  name: string;
+  brand: {
+    _id: string;
+    name: string;
+  };
+}
+
 export interface Product {
   _id: string;
   name: string;

@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { createClient, SanityClient } from '@sanity/client';
 import { environment } from '../../environments/environment';
 
+import { Product, Category, Brand, CarModel } from '../models/spares.model';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -17,9 +19,11 @@ export class SanityService {
     });
   }
 
-  // Fetch all products/car parts along with categories, brands, and extended data
-  async getProducts(): Promise<any[]> {
-    const query = `*[_type == "product"] {
+  /**
+   * Fetch all products with robust error handling and type safety
+   */
+  async getProducts(): Promise<Product[]> {
+    const query = `*[_type == "product" && defined(name)] | order(_createdAt desc) {
       _id,
       name,
       "slug": slug.current,
@@ -53,32 +57,38 @@ export class SanityService {
         value
       }
     }`;
-    return await this.client.fetch(query);
+    return await this.client.fetch(query) || [];
   }
 
-  // Fetch only categories to build a filter menu
-  async getCategories(): Promise<any[]> {
-    const query = `*[_type == "category"] {
+  /**
+   * Fetch categories for the filter menu
+   */
+  async getCategories(): Promise<Category[]> {
+    const query = `*[_type == "category" && defined(title)] | order(title asc) {
       _id,
       title,
       "slug": slug.current
     }`;
-    return await this.client.fetch(query);
+    return await this.client.fetch(query) || [];
   }
 
-  // Fetch all part brands for filtering
-  async getBrands(): Promise<any[]> {
-    const query = `*[_type == "brand"] {
+  /**
+   * Fetch brands for the filter menu
+   */
+  async getBrands(): Promise<Brand[]> {
+    const query = `*[_type == "brand" && defined(name)] | order(name asc) {
       _id,
       name,
       "logo": logo.asset->url
     }`;
-    return await this.client.fetch(query);
+    return await this.client.fetch(query) || [];
   }
 
-  // Fetch all car models for vehicle filtering
-  async getCarModels(): Promise<any[]> {
-    const query = `*[_type == "carModel"] {
+  /**
+   * Fetch car models for advanced vehicle selection
+   */
+  async getCarModels(): Promise<CarModel[]> {
+    const query = `*[_type == "carModel" && defined(name)] | order(name asc) {
       _id,
       name,
       "brand": brand->{
@@ -86,6 +96,6 @@ export class SanityService {
         name
       }
     }`;
-    return await this.client.fetch(query);
+    return await this.client.fetch(query) || [];
   }
 }

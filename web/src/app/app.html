@@ -5,11 +5,12 @@
       <h1 class="brand-logo">Autospares</h1>
     </div>
     
-    <div class="navbar-search">
+        <div class="navbar-search">
       <input 
         type="text" 
         placeholder="Search parts, SKU, OEM..." 
-        [(ngModel)]="searchQuerySignal()"
+        [ngModel]="searchQuerySignal()"
+        (ngModelChange)="searchQuerySignal.set($event)"
         [ngModelOptions]="{standalone: true}"
         class="search-input"
       >
@@ -38,15 +39,23 @@
     </div>
     
     <div class="quick-vehicle-selector">
-      <select [(ngModel)]="selectedBrandSignal()" class="vehicle-select">
-        <option value="">Select Brand</option>
+      <select 
+        [ngModel]="selectedBrandSignal()" 
+        (ngModelChange)="selectedBrandSignal.set($event)"
+        class="vehicle-select"
+      >
+        <option [value]="null">Select Brand</option>
         @for (brand of brandsSignal(); track brand._id) {
           <option [value]="brand.name">{{ brand.name }}</option>
         }
       </select>
       
-      <select [(ngModel)]="selectedVehicleModelSignal()" class="vehicle-select">
-        <option value="">Select Model</option>
+      <select 
+        [ngModel]="selectedVehicleModelSignal()" 
+        (ngModelChange)="selectedVehicleModelSignal.set($event)"
+        class="vehicle-select"
+      >
+        <option [value]="null">Select Model</option>
         @for (model of vehicleModelsSignal(); track model) {
           <option [value]="model">{{ model }}</option>
         }
@@ -74,9 +83,17 @@
           <div class="filter-options">
             @for (category of categoriesSignal(); track category._id) {
               <label class="filter-option">
-                <input type="radio" name="category" [value]="category.title" [(ngModel)]="selectedCategorySignal()">
+                <input 
+                  type="radio" 
+                  name="category" 
+                  [value]="category.title" 
+                  [ngModel]="selectedCategorySignal()"
+                  (ngModelChange)="selectedCategorySignal.set($event)"
+                >
                 <span>{{ category.title }}</span>
               </label>
+            } @empty {
+              <p class="text-muted">No categories available</p>
             }
           </div>
         </div>
@@ -87,9 +104,17 @@
           <div class="filter-options">
             @for (brand of brandsSignal(); track brand._id) {
               <label class="filter-option">
-                <input type="radio" name="brand" [value]="brand.name" [(ngModel)]="selectedBrandSignal()">
+                <input 
+                  type="radio" 
+                  name="brand" 
+                  [value]="brand.name" 
+                  [ngModel]="selectedBrandSignal()"
+                  (ngModelChange)="selectedBrandSignal.set($event)"
+                >
                 <span>{{ brand.name }}</span>
               </label>
+            } @empty {
+              <p class="text-muted">No brands available</p>
             }
           </div>
         </div>
@@ -98,10 +123,22 @@
         <div class="filter-group">
           <h4 class="filter-title">Price Range (ZAR)</h4>
           <div class="price-inputs">
-            <input type="number" placeholder="Min" [(ngModel)]="minPriceSignal()" class="price-input">
+            <input 
+              type="number" 
+              placeholder="Min" 
+              [ngModel]="minPriceSignal()" 
+              (ngModelChange)="minPriceSignal.set($event)"
+              class="price-input"
+            >
           </div>
           <div class="price-inputs">
-            <input type="number" placeholder="Max" [(ngModel)]="maxPriceSignal()" class="price-input">
+            <input 
+              type="number" 
+              placeholder="Max" 
+              [ngModel]="maxPriceSignal()" 
+              (ngModelChange)="maxPriceSignal.set($event)"
+              class="price-input"
+            >
           </div>
         </div>
 

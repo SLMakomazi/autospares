@@ -198,7 +198,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp var(--transition-slow) ease-out;
+  animation: fadeInUp var(--transition-slow) ease-out forwards;
 }
 
 .animate-fade-in {

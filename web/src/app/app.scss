@@ -9,9 +9,11 @@
   transition: all var(--transition-base);
   padding: var(--spacing-lg) 0;
 
-  &.scrolled {
-    background: rgba(15, 23, 42, 0.9);
+    &.scrolled {
+    background: rgba(15, 23, 42, 0.75);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding: var(--spacing-md) 0;
     box-shadow: var(--shadow-lg);
   }
