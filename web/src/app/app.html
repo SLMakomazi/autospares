@@ -1,47 +1,248 @@
-<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: sans-serif;">
-  
-  <header style="margin-bottom: 40px; text-align: center; padding: 20px 0; border-bottom: 2px solid #eaeaea;">
-    <h1 style="color: #1a1a1a; margin-bottom: 8px;">Autospares Catalogue</h1>
-    <p style="color: #666; font-size: 1.1rem; margin: 0;">Browse quality parts. Click to chat with us directly on WhatsApp to order.</p>
-  </header>
-
-  <div *ngIf="loading" style="text-align: center; padding: 50px 0; font-size: 1.3rem; color: #666;">
-  <p>Loading quality spares...</p>
-</div>
-
-<div *ngIf="errorMessage" style="text-align: center; padding: 30px; margin: 20px auto; max-width: 600px; border: 2px dashed #e11d48; border-radius: 8px; background-color: #fff1f2; color: #9f1239; font-family: sans-serif;">
-  <h3 style="margin-top: 0;">⚠️ Connection Error</h3>
-  <p>{{ errorMessage }}</p>
-  <p style="font-size: 0.9rem; color: #be123c;">Check your browser console (F12) for more details.</p>
-</div>
-
-  <div *ngIf="!loading" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+<!-- Sticky Navigation Header -->
+<nav class="navbar" [class.scrolled]="isScrolledSignal()">
+  <div class="container navbar-content">
+    <div class="navbar-brand">
+      <h1 class="brand-logo">Autospares</h1>
+    </div>
     
-    <div *ngFor="let product of products" style="border: 1px solid #eaeaea; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.05); background-color: #fff; transition: transform 0.2s;">
-      <div>
-        <img [src]="product.image || 'https://via.placeholder.com/300x200?text=No+Image+Available'" 
-             [alt]="product.name" 
-             style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
-        
-        <span style="font-size: 0.75rem; text-transform: uppercase; color: #e11d48; font-weight: bold; display: block; margin-top: 12px; letter-spacing: 0.5px;">
-          {{ product.partBrand }} • {{ product.category }}
-        </span>
-        
-        <h3 style="margin: 8px 0; font-size: 1.15rem; color: #222; font-weight: 600; line-height: 1.4;">
-          {{ product.name }}
-        </h3>
-        
-        <p style="font-size: 1.35rem; font-weight: 700; color: #16a34a; margin: 0 0 16px 0;">
-          {{ product.price ? 'R ' + product.price : 'Contact for Price' }}
-        </p>
-      </div>
-
-      <a [href]="getWhatsAppLink(product)" 
-         target="_blank" 
-         style="background-color: #25D366; color: white; text-align: center; padding: 12px 16px; border-radius: 8px; text-decoration: none; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1rem; border: none; cursor: pointer;">
-        💬 Chat on WhatsApp
-      </a>
+    <div class="navbar-search">
+      <input 
+        type="text" 
+        placeholder="Search parts, SKU, OEM..." 
+        [(ngModel)]="searchQuerySignal()"
+        [ngModelOptions]="{standalone: true}"
+        class="search-input"
+      >
+    </div>
+    
+    <div class="navbar-links">
+      <a href="#" class="nav-link">Catalog</a>
+      <a href="#" class="nav-link">Contact</a>
+      @if (!loadingSignal()) {
+        <span class="results-count">{{ filteredProductsSignal().length }} parts</span>
+      }
     </div>
 
+    <button class="mobile-filter-toggle" (click)="toggleFilters()">
+      <span>Filters</span>
+    </button>
   </div>
-</div>
+</nav>
+
+<!-- Hero Banner -->
+<section class="hero">
+  <div class="container hero-content">
+    <div class="hero-text">
+      <h1 class="hero-title">Premium Auto Parts</h1>
+      <p class="hero-subtitle">Quality replacement parts for every vehicle</p>
+    </div>
+    
+    <div class="quick-vehicle-selector">
+      <select [(ngModel)]="selectedBrandSignal()" class="vehicle-select">
+        <option value="">Select Brand</option>
+        @for (brand of brandsSignal(); track brand._id) {
+          <option [value]="brand.name">{{ brand.name }}</option>
+        }
+      </select>
+      
+      <select [(ngModel)]="selectedVehicleModelSignal()" class="vehicle-select">
+        <option value="">Select Model</option>
+        @for (model of vehicleModelsSignal(); track model) {
+          <option [value]="model">{{ model }}</option>
+        }
+      </select>
+    </div>
+  </div>
+</section>
+
+<!-- Main Content -->
+<main class="main-content">
+  <div class="container">
+    <div class="content-layout">
+      <!-- Sidebar Filters -->
+      <aside class="filters-sidebar" [class.mobile-open]="showMobileFiltersSignal()">
+        <div class="filters-header">
+          <h3>Filters</h3>
+          @if (searchQuerySignal() || selectedCategorySignal() || selectedBrandSignal() || selectedVehicleModelSignal() || minPriceSignal() || maxPriceSignal()) {
+            <button class="clear-filters-btn" (click)="clearFilters()">Clear All</button>
+          }
+        </div>
+
+        <!-- Category Filter -->
+        <div class="filter-group">
+          <h4 class="filter-title">Category</h4>
+          <div class="filter-options">
+            @for (category of categoriesSignal(); track category._id) {
+              <label class="filter-option">
+                <input type="radio" name="category" [value]="category.title" [(ngModel)]="selectedCategorySignal()">
+                <span>{{ category.title }}</span>
+              </label>
+            }
+          </div>
+        </div>
+
+        <!-- Brand Filter -->
+        <div class="filter-group">
+          <h4 class="filter-title">Brand</h4>
+          <div class="filter-options">
+            @for (brand of brandsSignal(); track brand._id) {
+              <label class="filter-option">
+                <input type="radio" name="brand" [value]="brand.name" [(ngModel)]="selectedBrandSignal()">
+                <span>{{ brand.name }}</span>
+              </label>
+            }
+          </div>
+        </div>
+
+        <!-- Price Filter -->
+        <div class="filter-group">
+          <h4 class="filter-title">Price Range (ZAR)</h4>
+          <div class="price-inputs">
+            <input type="number" placeholder="Min" [(ngModel)]="minPriceSignal()" class="price-input">
+          </div>
+          <div class="price-inputs">
+            <input type="number" placeholder="Max" [(ngModel)]="maxPriceSignal()" class="price-input">
+          </div>
+        </div>
+
+        <!-- Close button for mobile -->
+        <button class="close-filters-btn mobile-only" (click)="toggleFilters()">Close Filters</button>
+      </aside>
+
+      <!-- Products Grid -->
+      <section class="products-section">
+        <!-- Loading State -->
+        @if (loadingSignal()) {
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading quality spares...</p>
+          </div>
+        }
+
+        <!-- Error State -->
+        @if (errorMessageSignal()) {
+          <div class="error-state">
+            <h3>⚠️ Connection Error</h3>
+            <p>{{ errorMessageSignal() }}</p>
+            <p class="error-hint">Check your browser console (F12) for more details.</p>
+          </div>
+        }
+
+        <!-- No Results State -->
+        @if (!loadingSignal() && !errorMessageSignal() && filteredProductsSignal().length === 0) {
+          <div class="no-results">
+            <h3>No Parts Found</h3>
+            <p>We couldn't find any parts matching your criteria.</p>
+            <a [href]="getCustomQuoteLink()" target="_blank" class="whatsapp-cta">
+              <span class="whatsapp-icon">💬</span>
+              <span>Request Custom Sourcing Quote</span>
+            </a>
+          </div>
+        }
+
+        <!-- Products Grid -->
+        @if (!loadingSignal() && !errorMessageSignal() && filteredProductsSignal().length > 0) {
+          <div class="products-grid">
+            @for (product of filteredProductsSignal(); track product._id; let i = $index) {
+              <div 
+                class="product-card animate-fade-in-up"
+                [class.stagger-1]="i % 10 === 0"
+                [class.stagger-2]="i % 10 === 1"
+                [class.stagger-3]="i % 10 === 2"
+                [class.stagger-4]="i % 10 === 3"
+                [class.stagger-5]="i % 10 === 4"
+                [class.stagger-6]="i % 10 === 5"
+                [class.stagger-7]="i % 10 === 6"
+                [class.stagger-8]="i % 10 === 7"
+                [class.stagger-9]="i % 10 === 8"
+                [class.stagger-10]="i % 10 === 9"
+              >
+                <!-- Product Image -->
+                <div class="product-image">
+                  <img 
+                    [src]="product.images?.[0] ?? 'https://via.placeholder.com/300x200?text=No+Image'" 
+                    [alt]="product.name"
+                    class="product-img"
+                  >
+                  <!-- Condition Badge -->
+                  <span class="condition-badge" [class.condition-new]="product.condition === 'New' || product.condition === 'Aftermarket'" [class.condition-used]="product.condition === 'Used'">
+                    {{ product.condition }}
+                  </span>
+                </div>
+
+                <!-- Product Info -->
+                <div class="product-info">
+                  <div class="product-meta">
+                    @if (product.partBrand) {
+                      <span class="product-brand">{{ product.partBrand.name }}</span>
+                    }
+                    @if (product.category) {
+                      <span class="product-category">{{ product.category.title }}</span>
+                    }
+                  </div>
+                  
+                  <h3 class="product-name">{{ product.name }}</h3>
+                  
+                  <div class="product-details">
+                    @if (product.sku) {
+                      <span class="product-sku">SKU: {{ product.sku }}</span>
+                    }
+                    @if (product.partNumber) {
+                      <span class="product-part-number">MPN: {{ product.partNumber }}</span>
+                    }
+                  </div>
+
+                  <!-- Compatible Vehicles -->
+                  @if (product.compatibleVehicles && product.compatibleVehicles.length > 0) {
+                    <div class="compatible-vehicles">
+                      <span class="vehicles-label">Fits:</span>
+                      <span class="vehicles-list">
+                        {{ product.compatibleVehicles[0].model?.brand }} {{ product.compatibleVehicles[0].model?.name }}
+                        @if (product.compatibleVehicles.length > 1) {
+                          <span>+{{ product.compatibleVehicles.length - 1 }} more</span>
+                        }
+                      </span>
+                    </div>
+                  }
+
+                  <!-- Specifications Toggle -->
+                  @if (product.specifications && product.specifications.length > 0) {
+                    <div class="specifications">
+                      <button class="specs-toggle" (click)="toggleSpecs(product._id)">
+                        <span>Specifications</span>
+                        <span class="specs-arrow" [class.expanded]="isSpecsExpanded(product._id)">▼</span>
+                      </button>
+                      <div class="specs-content" [class.expanded]="isSpecsExpanded(product._id)">
+                        @for (spec of product.specifications; track spec.key) {
+                          <div class="spec-item">
+                            <span class="spec-label">{{ spec.key }}:</span>
+                            <span class="spec-value">{{ spec.value }}</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Price and CTA -->
+                  <div class="product-footer">
+                    <div class="product-price">
+                      @if (product.price) {
+                        {{ 'R ' + product.price.toLocaleString() }}
+                      } @else {
+                        Contact for Price
+                      }
+                    </div>
+                    <a [href]="getWhatsAppLink(product)" target="_blank" class="whatsapp-btn">
+                      <span class="whatsapp-icon">💬</span>
+                      <span>Chat on WhatsApp</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+</main>
