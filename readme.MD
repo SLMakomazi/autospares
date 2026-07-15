@@ -1,1 +1,1 @@
-cd /home/siseko/projects/autospares && export SANITY_TOKEN='skLNc0zOOgfbhBHfeJFPwYNEk3Mg0msqwsZe4vDpa5GqiF5nNLvU1X4fCp7ZhC1gWcp4VdbsrIkbBaFTu3ZUWT3WG3eijDx6A2KrBG9EYqbKrLdhYhplFFaeeCv2VZyp4rvXiT2QJGeGMNKwM06I3hcQxM8R5u84hcEDg7qbO6u6EGkw9vYh' && node studio/scripts/seed.js
+cd /home/siseko/projects/autospares && export SANITY_TOKEN='skfGZNe6eAIlK20lf43Tu0oLHnfz1V0TTQwIhMQGlfzE2tV0gdqf3QZ81d0KW863glj6xUvNxOjDuqakTuzYbOnPdUI8vf0xhFGy8JFyG9aUQrzkSU8lzTiUkG86wmo8rpbaXFOlYDgroQim7KPVFBHg121SoXPqkVihzGJhZ1tAQDfntGbJ' && node studio/scripts/seed.js
