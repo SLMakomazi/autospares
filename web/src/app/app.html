@@ -8,25 +8,33 @@
         <div class="navbar-search">
       <input 
         type="text" 
-        placeholder="Search parts, SKU, OEM..." 
+        placeholder="Search parts, category, brand, model..." 
         [ngModel]="searchQuerySignal()"
         (ngModelChange)="searchQuerySignal.set($event)"
+        (focus)="showSearchSuggestionsSignal.set(true)"
+        (blur)="hideSearchSuggestions()"
         [ngModelOptions]="{standalone: true}"
         class="search-input"
       >
+
+      @if (showSearchSuggestionsSignal() && searchSuggestionsSignal().length > 0) {
+        <div class="search-suggestions">
+          @for (suggestion of searchSuggestionsSignal(); track suggestion.label + suggestion.type) {
+            <button type="button" class="search-suggestion" (mousedown)="$event.preventDefault(); applySuggestion(suggestion)">
+              <span class="suggestion-label">{{ suggestion.label }}</span>
+              <span class="suggestion-type">{{ suggestion.type }}</span>
+            </button>
+          }
+        </div>
+      }
     </div>
     
     <div class="navbar-links">
       <a href="#" class="nav-link">Catalog</a>
       <a href="#" class="nav-link">Contact</a>
-      @if (!loadingSignal()) {
-        <span class="results-count">{{ filteredProductsSignal().length }} parts</span>
-      }
     </div>
 
-    <button class="mobile-filter-toggle" (click)="toggleFilters()">
-      <span>Filters</span>
-    </button>
+    
   </div>
 </nav>
 
@@ -35,45 +43,54 @@
   <div class="container hero-content">
     <div class="hero-text">
       <h1 class="hero-title">Premium Auto Parts</h1>
-      <p class="hero-subtitle">Quality replacement parts for every vehicle</p>
-    </div>
-    
-    <div class="quick-vehicle-selector">
-      <select 
-        [ngModel]="selectedBrandSignal()" 
-        (ngModelChange)="selectedBrandSignal.set($event)"
-        class="vehicle-select"
-      >
-        <option [value]="null">Select Brand</option>
-        @for (brand of brandsSignal(); track brand._id) {
-          <option [value]="brand.name">{{ brand.name }}</option>
-        }
-      </select>
-      
-      <select 
-        [ngModel]="selectedVehicleModelSignal()" 
-        (ngModelChange)="selectedVehicleModelSignal.set($event)"
-        class="vehicle-select"
-      >
-        <option [value]="null">Select Model</option>
-        @for (model of vehicleModelsSignal(); track model) {
-          <option [value]="model">{{ model }}</option>
-        }
-      </select>
+      <p class="hero-subtitle">Quality replacement parts for every vehicle, we delivery nation wide anywhere within South Africa</p>
     </div>
   </div>
 </section>
+
+<div class="container quick-category-row">
+  <button class="mobile-filter-toggle" (click)="toggleFilters()">
+      <span>{{ showMobileFiltersSignal() ? 'Hide Filters' : 'Show Filters' }}</span>
+    </button>
+  <button
+    type="button"
+    class="quick-category-btn"
+    [class.active]="selectedCategorySignal() === null"
+    (click)="toggleCategoryFilter(null)"
+  >
+    <span>All Parts</span>
+    <span class="filter-count">{{ filteredProductsSignal().length }}</span>
+  </button>
+  @for (category of categoriesSignal(); track category._id) {
+    <button
+      type="button"
+      class="quick-category-btn"
+      [class.active]="selectedCategorySignal() === category.title"
+      (click)="toggleCategoryFilter(category.title)"
+    >
+      <span>{{ category.title }}</span>
+      <span class="filter-count">{{ filteredProductsSignal().length }}</span>
+    </button>
+  }
+</div>
 
 <!-- Main Content -->
 <main class="main-content">
   <div class="container">
     <div class="content-layout">
+      @if (showMobileFiltersSignal()) {
+        <button class="mobile-filter-backdrop" type="button" (click)="toggleFilters()"></button>
+      }
+
       <!-- Sidebar Filters -->
       <aside class="filters-sidebar" [class.mobile-open]="showMobileFiltersSignal()">
         <div class="filters-header">
-          <h3>Filters</h3>
+          <div class="filters-title-group">
+            <h3>Filters</h3>
+            <span class="filter-results-count">{{ filteredProductsSignal().length }} results</span>
+          </div>
           @if (searchQuerySignal() || selectedCategorySignal() || selectedBrandSignal() || selectedVehicleModelSignal() || minPriceSignal() || maxPriceSignal()) {
-            <button class="clear-filters-btn" (click)="clearFilters()">Clear All</button>
+            <button class="clear-filters-btn" (click)="clearFilters()">Clear</button>
           }
         </div>
 
@@ -115,6 +132,27 @@
               </label>
             } @empty {
               <p class="text-muted">No brands available</p>
+            }
+          </div>
+        </div>
+
+        <!-- Vehicle Model Filter -->
+        <div class="filter-group">
+          <h4 class="filter-title">Car Model</h4>
+          <div class="filter-options">
+            @for (carModel of carModelsSignal(); track carModel._id) {
+              <label class="filter-option">
+                <input 
+                  type="radio" 
+                  name="vehicleModel" 
+                  [value]="carModel.brand.name + ' ' + carModel.name"
+                  [ngModel]="selectedVehicleModelSignal()"
+                  (ngModelChange)="selectedVehicleModelSignal.set($event)"
+                >
+                <span>{{ carModel.brand.name }} {{ carModel.name }}</span>
+              </label>
+            } @empty {
+              <p class="text-muted">No car models available</p>
             }
           </div>
         </div>
