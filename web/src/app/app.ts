@@ -29,6 +29,9 @@ export class App implements OnInit {
   readonly maxPriceSignal = signal<number | null>(null);
   readonly showSearchSuggestionsSignal = signal<boolean>(false);
 
+  // Contact form signals
+  readonly contactMessageSignal = signal<string>('');
+
   // UI state signals
   readonly isScrolledSignal = signal<boolean>(false);
   readonly showMobileFiltersSignal = signal<boolean>(false);
@@ -229,6 +232,19 @@ export class App implements OnInit {
     const phoneNumber = '27XXXXXXXXX';
     const message = `Hi! I am interested in the "${product.name}" (SKU: ${product.sku || 'N/A'}). Is this auto part still available?`;
     return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  }
+
+  getContactWhatsAppLink(): string {
+    const phoneNumber = '27XXXXXXXXX';
+    const message = 'Hi Autospares, I would like to enquire about your auto parts and services. Please get back to me.';
+    return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  }
+
+  getContactFormLink(): string {
+    const phoneNumber = '27XXXXXXXXX';
+    const message = this.contactMessageSignal().trim() || 'Hi Autospares, I would like more information about your products.';
+    const whatsappMessage = `Hi Autospares, ${message}`;
+    return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`;
   }
 
   getCustomQuoteLink(): string {
