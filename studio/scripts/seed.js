@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs')
 const path = require('path')
-const sanityClient = require('@sanity/client')
+const { createClient } = require('@sanity/client')
 
 const projectId = 'dk7b61f9'
 const dataset = 'production'
@@ -12,7 +12,7 @@ if (!token) {
   process.exit(1)
 }
 
-const client = sanityClient({
+const client = createClient({
   projectId,
   dataset,
   token,
@@ -20,7 +20,7 @@ const client = sanityClient({
   apiVersion: '2024-01-01',
 })
 
-const sharedImagePath = path.resolve(__dirname, '../web/public/sparesImage.jfif')
+const sharedImagePath = path.resolve(__dirname, '..', '..', 'web', 'public', 'sparesImage.jfif')
 
 function slugify(text) {
   return String(text)
